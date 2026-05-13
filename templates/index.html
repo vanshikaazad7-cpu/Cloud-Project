@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI Communication Coach — practise and improve your spoken communication skills with real-time AI feedback." />
+  <title>AI Communication Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="app-wrapper">
+    <!-- HEADER -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">🎙️</span>
+          <span class="logo-text">AI <span class="accent">Communication</span> Coach</span>
+        </div>
+        <nav class="header-nav">
+          <button id="interviewToggle" class="btn-nav">
+            <span>💼</span> Interview Mode
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-badge">✨ Powered by Azure AI</div>
+        <h1 class="hero-title">
+          Speak <span class="gradient-text">Confidently</span>,<br />
+          Communicate <span class="gradient-text">Powerfully</span>
+        </h1>
+        <p class="hero-subtitle">
+          Record your voice, get instant AI-driven feedback on sentiment, clarity, key phrases and speaking pace.
+        </p>
+      </section>
+
+      <!-- INTERVIEW BANNER -->
+      <div class="interview-banner glass-card hidden" id="interviewBanner">
+        <div class="interview-label">💼 Interview Question</div>
+        <p class="interview-question" id="interviewQuestion">Tell me about yourself.</p>
+        <button class="btn-ghost" id="nextQuestionBtn">Next Question →</button>
+      </div>
+
+      <!-- RECORDER CARD -->
+      <section class="recorder-card glass-card">
+        <div class="waveform-wrap" id="waveformWrap">
+          <canvas id="waveformCanvas" width="600" height="80"></canvas>
+        </div>
+
+        <button id="micBtn" class="mic-btn" title="Start / Stop Recording">
+          <div class="mic-rings">
+            <span class="ring ring-1"></span>
+            <span class="ring ring-2"></span>
+          </div>
+          <span class="mic-icon">🎤</span>
+          <span class="mic-label" id="micLabel">Tap to Record</span>
+        </button>
+
+        <div class="timer" id="timer">00:00</div>
+
+        <div class="transcription-wrap">
+          <label class="field-label" for="transcriptionArea">Live Transcription</label>
+          <textarea
+            id="transcriptionArea"
+            class="transcription-area"
+            placeholder="Your speech will appear here… or type / paste text directly."
+            rows="5"
+          ></textarea>
+          <div class="word-count" id="wordCount">0 words</div>
+        </div>
+
+        <div class="action-row">
+          <button id="clearBtn" class="btn-secondary">🗑 Clear</button>
+          <button id="analyzeBtn" class="btn-primary" disabled>
+            <span class="btn-text">✨ Analyze</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULTS DASHBOARD -->
+      <section class="results-section hidden" id="resultsSection">
+        <h2 class="section-title">📊 Analysis Results</h2>
+
+        <div class="metrics-grid">
+          <!-- Sentiment -->
+          <div class="metric-card glass-card">
+            <div class="metric-icon" id="sentimentIcon">😐</div>
+            <div class="metric-label">Sentiment</div>
+            <div class="metric-value" id="sentimentValue">—</div>
+            <div class="sentiment-bars">
+              <div class="s-bar-wrap">
+                <span class="s-bar-label">Positive</span>
+                <div class="s-bar-track"><div class="s-bar-fill positive" id="posBar" style="width:0%"></div></div>
+                <span class="s-bar-pct" id="posPct">0%</span>
+              </div>
+              <div class="s-bar-wrap">
+                <span class="s-bar-label">Neutral</span>
+                <div class="s-bar-track"><div class="s-bar-fill neutral" id="neuBar" style="width:0%"></div></div>
+                <span class="s-bar-pct" id="neuPct">0%</span>
+              </div>
+              <div class="s-bar-wrap">
+                <span class="s-bar-label">Negative</span>
+                <div class="s-bar-track"><div class="s-bar-fill negative" id="negBar" style="width:0%"></div></div>
+                <span class="s-bar-pct" id="negPct">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confidence -->
+          <div class="metric-card glass-card">
+            <div class="metric-icon">🎯</div>
+            <div class="metric-label">Confidence Score</div>
+            <div class="circular-progress-wrap">
+              <svg class="circular-progress" viewBox="0 0 100 100">
+                <circle class="cp-track" cx="50" cy="50" r="40"/>
+                <circle class="cp-fill" cx="50" cy="50" r="40" id="cpFill"/>
+              </svg>
+              <div class="cp-text" id="cpText">0%</div>
+            </div>
+          </div>
+
+          <!-- WPM -->
+          <div class="metric-card glass-card">
+            <div class="metric-icon">⚡</div>
+            <div class="metric-label">Speaking Speed</div>
+            <div class="metric-value wpm-value" id="wpmValue">—</div>
+            <div class="metric-sub">words / minute</div>
+            <div class="wpm-gauge">
+              <div class="gauge-fill" id="gaugeFill"></div>
+              <div class="gauge-labels">
+                <span>Slow</span><span>Ideal</span><span>Fast</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Phrases -->
+        <div class="detail-card glass-card">
+          <h3 class="detail-title"><span>🔑</span> Key Phrases</h3>
+          <div class="phrases-wrap" id="phrasesWrap"></div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="detail-card glass-card suggestions-card">
+          <h3 class="detail-title"><span>💡</span> Suggestions to Improve</h3>
+          <ul class="suggestions-list" id="suggestionsList"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Built with ❤️ using Azure AI · AI Communication Coach © 2025</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
